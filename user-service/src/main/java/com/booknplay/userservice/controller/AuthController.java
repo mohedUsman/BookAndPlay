@@ -10,6 +10,7 @@ import com.booknplay.userservice.service.AuthService;
 import com.booknplay.userservice.service.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,25 +32,20 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class AuthController {
 
-    // CHANGE: removed direct dependencies (AuthenticationManager, UserRepository, RoleRepository, PasswordEncoder, JwtService)
-    // CHANGE: inject AuthService to delegate business logic
+
     private final AuthService authService;
 
     @Operation(summary = "Register a new user")
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserDto request) {
-        // CHANGE: delegate to service, keep same response strings
+    public ResponseEntity<String> register(@Valid @RequestBody UserDto request) {
+
         String result = authService.register(request);
-        if ("User already exists".equals(result)) {
-            return ResponseEntity.badRequest().body(result); // preserve previous 400 for duplicate
-        }
         return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "Login with email and password")
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-        // CHANGE: delegate to service, returns JWT token string
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
         String token = authService.login(request);
         return ResponseEntity.ok(token);
     }

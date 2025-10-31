@@ -4,6 +4,8 @@ import com.booknplay.userservice.dto.LoginRequest;
 import com.booknplay.userservice.dto.UserDto;
 import com.booknplay.userservice.entity.Role;
 import com.booknplay.userservice.entity.User;
+import com.booknplay.userservice.exception.ConflictException;
+import com.booknplay.userservice.exception.ResourceNotFoundException;
 import com.booknplay.userservice.repository.RoleRepository;
 import com.booknplay.userservice.repository.UserRepository;
 import com.booknplay.userservice.service.AuthService;
@@ -23,7 +25,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    // CHANGE: moved dependencies from controller to service implementation
+
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -32,10 +34,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String register(UserDto request) {
-        // CHANGE: logic moved from AuthController.register into service
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            // Keeping same behavior: return a bad request message (controller maps to body only)
-            return "User already exists";
+            throw new ConflictException("User already exists");
         }
 
         User user = new User();
@@ -45,10 +45,12 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         Set<Role> roles = new HashSet<>();
-        for (String roleName : request.getRoles()) {
-            Role role = roleRepository.findByName(roleName)
-                    .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
-            roles.add(role);
+        if (request.getRoles() != null) {
+            for (String roleName : request.getRoles()) {
+                Role role = roleRepository.findByName(roleName)
+                        .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleName));
+                roles.add(role);
+            }
         }
         user.setRoles(roles);
         userRepository.save(user);
@@ -58,7 +60,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String login(LoginRequest request) {
-        // CHANGE: logic moved from AuthController.login into service
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
