@@ -6,6 +6,7 @@ import com.booknplay.userservice.entity.Role;
 import com.booknplay.userservice.entity.User;
 import com.booknplay.userservice.repository.RoleRepository;
 import com.booknplay.userservice.repository.UserRepository;
+import com.booknplay.userservice.service.AuthService;
 import com.booknplay.userservice.service.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,47 +25,32 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashSet;
 import java.util.Set;
 
-@Tag(name="Authentication APIs", description = "User registration and login")
+@Tag(name = "Authentication APIs", description = "User registration and login")
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class AuthController {
-    private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+
+    // CHANGE: removed direct dependencies (AuthenticationManager, UserRepository, RoleRepository, PasswordEncoder, JwtService)
+    // CHANGE: inject AuthService to delegate business logic
+    private final AuthService authService;
 
     @Operation(summary = "Register a new user")
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserDto request){
-        if (userRepository.findByEmail(request.getEmail()).isPresent()){
-            return ResponseEntity.badRequest().body("User already exists");
+    public ResponseEntity<String> register(@RequestBody UserDto request) {
+        // CHANGE: delegate to service, keep same response strings
+        String result = authService.register(request);
+        if ("User already exists".equals(result)) {
+            return ResponseEntity.badRequest().body(result); // preserve previous 400 for duplicate
         }
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        Set<Role> roles = new HashSet<>();
-        for (String roleName: request.getRoles()){
-            Role role = roleRepository.findByName(roleName).orElseThrow(() -> new RuntimeException("Role not found: "+ roleName));
-            roles.add(role);
-        }
-        user.setRoles(roles);
-        userRepository.save(user);
-        return ResponseEntity.ok("User registered successfully");
-
+        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "Login with email and password")
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request){
-        Authentication authentication = authenticationManager.authenticate
-                (new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtService.generateToken(authentication);
+    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+        // CHANGE: delegate to service, returns JWT token string
+        String token = authService.login(request);
         return ResponseEntity.ok(token);
     }
-
 }

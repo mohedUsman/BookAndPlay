@@ -46,6 +46,7 @@ public class JwtService {
                 .getSubject();
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> extractRoles(String token){
         return (List<String>) Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())

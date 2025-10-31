@@ -7,13 +7,16 @@ import java.util.*;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "roles")
 public class User {
     @Id
     //@Column(columnDefinition = "char(36)")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Column(name = "name", length = 100)
@@ -28,19 +31,13 @@ public class User {
     @Column(name = "phone", length = 10)
     private String phone;
 
-    @Column(name="created_at", updatable = false)
+    @Column(name="created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-//    @ManyToMany(fetch = FetchType.EAGER)
-//    @JoinTable(
-//            name="roles",
-//            joinColumns = @JoinColumn(name = "user_id"),
-//            inverseJoinColumns = @JoinColumn(name="role_id")
-//    )
-//    private Set<Role> roles = new HashSet<>();
+
    @ManyToMany(fetch = FetchType.EAGER)
    @JoinTable(
         name = "user_roles",                  // distinct join table
@@ -49,9 +46,24 @@ public class User {
    )
    private Set<Role> roles = new HashSet<>();
 
-    @PreUpdate
-    public void setLastUpdate(){
-        this.updatedAt = LocalDateTime.now();
+//    @PreUpdate
+//    public void setLastUpdate(){
+//        this.updatedAt = LocalDateTime.now();
+//    }
+    @PrePersist
+    public void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
     }
 
+        @PreUpdate
+        public void onUpdate() {
+            this.updatedAt = LocalDateTime.now();
+        }
 }
+
+
