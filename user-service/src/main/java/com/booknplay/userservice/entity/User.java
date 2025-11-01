@@ -14,7 +14,6 @@ import java.util.*;
 @ToString(exclude = "roles")
 public class User {
     @Id
-    //@Column(columnDefinition = "char(36)")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
@@ -46,10 +45,7 @@ public class User {
    )
    private Set<Role> roles = new HashSet<>();
 
-//    @PreUpdate
-//    public void setLastUpdate(){
-//        this.updatedAt = LocalDateTime.now();
-//    }
+
     @PrePersist
     public void onCreate() {
         if (createdAt == null) {

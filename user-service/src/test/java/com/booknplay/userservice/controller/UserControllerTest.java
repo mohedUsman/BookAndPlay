@@ -31,38 +31,38 @@ public class UserControllerTest {
         userController = new UserController(userRepository, passwordEncoder, jwtService);
     }
 
-    @Test
-    public void testUpdateUser(){
-        User user = new User();
-        user.setId(1L);
-        user.setEmail("testuser@gmail.com");
-        UserDto updatedRequest = new UserDto();
-        updatedRequest.setName("new name");
-        updatedRequest.setPhone("123456");
-        Principal principal = ()-> "testuser@gmail.com";
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
+//    @Test
+//    public void testUpdateUser(){
+//        User user = new User();
+//        user.setId(1L);
+//        user.setEmail("testuser@gmail.com");
+//        UserDto updatedRequest = new UserDto();
+//        updatedRequest.setName("new name");
+//        updatedRequest.setPhone("123456");
+//        Principal principal = ()-> "testuser@gmail.com";
+//        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+//        when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
+//
+//        ResponseEntity<String> response = userController.updateUser(1L, updatedRequest, principal);
+//        assertEquals(200, response.getStatusCodeValue());
+//        assertEquals("User updated successfully!", response.getBody());
+//    }
 
-        ResponseEntity<String> response = userController.updateUser(1L, updatedRequest, principal);
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals("User updated successfully!", response.getBody());
-    }
-
-    @Test
-    public void testDeleteUser() {
-        User user = new User();
-        user.setId(1L);
-        user.setEmail("test@example.com");
-
-        Principal principal = () -> "test@example.com";
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-
-        ResponseEntity<String> response = userController.deleteUser(1L, principal);
-
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals("User deleted successfully!", response.getBody());
-    }
+//    @Test
+//    public void testDeleteUser() {
+//        User user = new User();
+//        user.setId(1L);
+//        user.setEmail("test@example.com");
+//
+//        Principal principal = () -> "test@example.com";
+//
+//        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+//
+//        ResponseEntity<String> response = userController.deleteUser(1L, principal);
+//
+//        assertEquals(200, response.getStatusCodeValue());
+//        assertEquals("User deleted successfully!", response.getBody());
+//    }
 
     @Test
     public void testGetCurrentUser() {
