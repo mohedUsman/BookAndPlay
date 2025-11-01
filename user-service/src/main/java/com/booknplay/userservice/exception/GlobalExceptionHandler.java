@@ -32,9 +32,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ApiError> handleUnauthorized(UnauthorizedException ex, HttpServletRequest request) {
-        ApiError error = new ApiError(Instant.now(), HttpStatus.UNAUTHORIZED.value(),
-                "Unauthorized", ex.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        ApiError error = new ApiError(Instant.now(), HttpStatus.FORBIDDEN.value(),
+                "FORBIDDEN", ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
