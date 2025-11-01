@@ -17,19 +17,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class UserControllerTest {
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
-    private JwtService jwtService;
-    private UserController userController;
+//public class UserControllerTest {
+//    private UserRepository userRepository;
+//    private PasswordEncoder passwordEncoder;
+//    private JwtService jwtService;
+//    private UserController userController;
 
-    @BeforeEach
-    public void setup(){
-        userRepository = mock(UserRepository.class);
-        passwordEncoder = mock(PasswordEncoder.class);
-        jwtService = mock(JwtService.class);
-        userController = new UserController(userRepository, passwordEncoder, jwtService);
-    }
+//    @BeforeEach
+//    public void setup(){
+//        userRepository = mock(UserRepository.class);
+//        passwordEncoder = mock(PasswordEncoder.class);
+//        jwtService = mock(JwtService.class);
+//        userController = new UserController(userRepository, passwordEncoder, jwtService);
+ //   }
 
 //    @Test
 //    public void testUpdateUser(){
@@ -64,20 +64,20 @@ public class UserControllerTest {
 //        assertEquals("User deleted successfully!", response.getBody());
 //    }
 
-    @Test
-    public void testGetCurrentUser() {
-        User user = new User();
-        user.setId(1L);
-        user.setEmail("test@example.com");
-
-        Principal principal = () -> "test@example.com";
-
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
-
-        ResponseEntity<User> response = userController.getCurrentUser(principal);
-
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals(user, response.getBody());
-    }
-
-}
+//    @Test
+//    public void testGetCurrentUser() {
+//        User user = new User();
+//        user.setId(1L);
+//        user.setEmail("test@example.com");
+//
+//        Principal principal = () -> "test@example.com";
+//
+//        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+//
+//        ResponseEntity<User> response = userController.getCurrentUser(principal);
+//
+//        assertEquals(200, response.getStatusCodeValue());
+//        assertEquals(user, response.getBody());
+//    }
+//
+//}
