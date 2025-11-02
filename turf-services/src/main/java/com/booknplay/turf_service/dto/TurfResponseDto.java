@@ -1,24 +1,21 @@
 package com.booknplay.turf_service.dto;
 
-import com.booknplay.turf_service.entity.SportType;
-import com.booknplay.turf_service.entity.TurfStatus;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+
+import java.util.List;
 
 @Data
 @Builder
-public class TurfResponseDto {
+public class TurfResponseDto { // CHANGE: new structure
     private Long id;
     private Long ownerId;
     private String name;
-    private String location;
-    private SportType sportType;
+    private AddressDto address; // CHANGE
     private Double pricePerHour;
-    private boolean isIndoor;
     private LocalTime availableFrom;
     private LocalTime availableTo;
-    private TurfStatus status;
+    private List<TurfSportOptionDto> sportOptions; // CHANGE
 }

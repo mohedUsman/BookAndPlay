@@ -2,15 +2,22 @@ package com.booknplay.turf_service.service;
 
 import com.booknplay.turf_service.dto.TurfRequestDto;
 import com.booknplay.turf_service.dto.TurfResponseDto;
-import com.booknplay.turf_service.entity.TurfStatus;
 
 import java.util.List;
 
 public interface TurfService {
+
     TurfResponseDto addTurf(TurfRequestDto dto, String ownerEmailId);
-    TurfResponseDto updateTurf(Long turfId, TurfRequestDto dto, Long ownerId);
-    List<TurfResponseDto> getAllTurfs();
-    TurfResponseDto updateStatus(Long id, TurfStatus status);
-    void deleteTurf(Long turfId, Long userId, List<String> roles);
+
+    // CHANGE: update/delete without path id (owner-only, inferred via token)
+    TurfResponseDto updateTurfById(Long turfId, TurfRequestDto dto, String ownerEmail);
+    void deleteTurfById(Long turfId, String ownerEmail);
+
     TurfResponseDto getTurfById(Long turfId);
+
+    List<TurfResponseDto> getAllTurfs();
+
+    // CHANGE: new API to list a turf owner’s turfs
+    List<TurfResponseDto> getMyTurfs(String ownerEmailId); // CHANGE
 }
+

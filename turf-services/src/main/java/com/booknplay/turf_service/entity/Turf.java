@@ -1,63 +1,68 @@
 package com.booknplay.turf_service.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Table(name = "turf")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-    public class Turf {
+@Getter
+@Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class Turf {
 
     @Id
-    @GeneratedValue(strategy = GenerationType. IDENTITY)
-    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "owner_id", nullable = false)
+    @Column(nullable = false)
     private Long ownerId;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Embedded
+    private Address address; // street + city only
+
+    @Column(nullable = false, length = 255)
     private String name;
 
-    @Column(name = "location", nullable = false, length = 500)
-    private String location;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "sport_type", nullable = false)
-    private SportType sportType;
-
-    @Column(name = "price_per_hour")
+    @Column
     private Double pricePerHour;
 
-    @Column(name = "is_indoor", nullable = false)
-    private Boolean isIndoor;
-
-    @Column(name = "available_from", nullable = false)
+    @Column(nullable = false)
     private LocalTime availableFrom;
 
-    @Column(name = "available_to", nullable = false)
+    @Column(nullable = false)
     private LocalTime availableTo;
 
-    @Enumerated(EnumType. STRING)
-    @Column(name = "status", nullable = false)
-    private TurfStatus status;
+    // IMPORTANT: Turf no longer contains is_indoor or sport_type.
+    // Multiple sport options are stored in child table.
+    @OneToMany(mappedBy = "turf", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<TurfSportOption> sportOptions = new ArrayList<>();
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    public void setSportOptions(List<TurfSportOption> options) {
+        if (this.sportOptions == null) {
+            this.sportOptions = new ArrayList<>();
+        }
+        this.sportOptions.clear();
+        if (options != null) {
+            for (TurfSportOption opt : options) {
+                opt.setTurf(this);
+            }
+            this.sportOptions.addAll(options);
+        }
+    }
 }

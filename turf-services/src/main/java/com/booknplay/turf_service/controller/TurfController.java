@@ -1,67 +1,96 @@
 package com.booknplay.turf_service.controller;
 
-import com.booknplay.turf_service.client.UserClient;
 import com.booknplay.turf_service.dto.TurfRequestDto;
 import com.booknplay.turf_service.dto.TurfResponseDto;
-import com.booknplay.turf_service.dto.UserDto;
 import com.booknplay.turf_service.service.TurfService;
+import io.swagger.v3.oas.annotations.Operation; // CHANGE: swagger docs
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid; // CHANGE: validation on inputs
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Slf4j
-@SecurityRequirement(name= "BearerAuth")
+@SecurityRequirement(name = "BearerAuth")
 @RestController
 @RequestMapping("/api/turfs")
 @RequiredArgsConstructor
-public class TurfController {
+public class TurfController { // CHANGE: thin controller
+
     private final TurfService turfService;
-    private final UserClient userClient;
+
+    @Operation(
+            summary = "Create a new turf (owner only)", // CHANGE
+            description = "Creates a turf owned by the authenticated user. Requires ROLE_OWNER. " +
+                    "Supports multiple sport options and structured address."
+    )
+    @ApiResponse(responseCode = "200", description = "Turf created", content = @Content(schema = @Schema(implementation = TurfResponseDto.class)))
     @PostMapping
-    public ResponseEntity<TurfResponseDto> addTurf(@RequestBody TurfRequestDto dto, @AuthenticationPrincipal Jwt principal){
+    public ResponseEntity<TurfResponseDto> addTurf(@Valid @RequestBody TurfRequestDto dto,
+                                                   @AuthenticationPrincipal Jwt principal) {
         String email = principal.getSubject();
-        log.debug("email of owner:{}", email);
-        return ResponseEntity.ok(turfService.addTurf(dto,email));
+        return ResponseEntity.ok(turfService.addTurf(dto, email)); // CHANGE: delegate
     }
 
+    @Operation(
+            summary = "Get turf by ID",
+            description = "Fetches a turf by its ID. Any authenticated user may access."
+    )
+    @ApiResponse(responseCode = "200", description = "Turf found", content = @Content(schema = @Schema(implementation = TurfResponseDto.class)))
     @GetMapping("/{id}")
-    public ResponseEntity<TurfResponseDto> getTurf(@PathVariable Long id){
-        return ResponseEntity.ok(turfService.getTurfById(id));
+    public ResponseEntity<TurfResponseDto> getTurf(@PathVariable Long id) {
+        return ResponseEntity.ok(turfService.getTurfById(id)); // CHANGE: delegate
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<TurfResponseDto> updateTurf(@PathVariable Long id,
+    @Operation(
+            summary = "Update my turf (owner only)", // CHANGE
+            description = "Updates the authenticated owner's turf without requiring a path ID. " +
+                    "Requires ROLE_OWNER. If multiple turfs exist per owner, clarify selection strategy."
+    )
+    @ApiResponse(responseCode = "200", description = "Turf updated", content = @Content(schema = @Schema(implementation = TurfResponseDto.class)))
+    @PutMapping("/{turfId}")
+    public ResponseEntity<TurfResponseDto> updateTurf(@PathVariable Long turfId,
                                                       @RequestBody TurfRequestDto dto,
-                                                      @AuthenticationPrincipal Jwt principal){
-        UserDto user = userClient.getUserByEmail(principal.getSubject());
-        return ResponseEntity.ok(turfService.updateTurf(id, dto, user.getId()));
+                                                      @RequestHeader("X-Owner-Email") String ownerEmail) {
+        return ResponseEntity.ok(turfService.updateTurfById(turfId, dto, ownerEmail));
     }
 
-    @PutMapping("/{id}/status")
-    public ResponseEntity<TurfResponseDto> updateStatus(@PathVariable Long id,
-                                                      @RequestBody TurfRequestDto dto
-                                                      ){
-        return ResponseEntity.ok(turfService.updateStatus(id, dto.getStatus()));
+    @Operation(
+            summary = "Delete my turf (owner only)", // CHANGE
+            description = "Deletes the authenticated owner's turf without requiring a path ID. Requires ROLE_OWNER."
+    )
+    @ApiResponse(responseCode = "200", description = "Turf deleted")
+    @DeleteMapping("/{turfId}")
+    public ResponseEntity<Void> deleteTurf(@PathVariable Long turfId,
+                                           @RequestHeader("X-Owner-Email") String ownerEmail) {
+        turfService.deleteTurfById(turfId, ownerEmail);
+        return ResponseEntity.ok().build();
     }
 
+    @Operation(
+            summary = "List all turfs (any authenticated user)",
+            description = "Returns all turfs in the system."
+    )
+    @ApiResponse(responseCode = "200", description = "List of turfs", content = @Content)
     @GetMapping
-    public ResponseEntity<List<TurfResponseDto>> all(){
-        return ResponseEntity.ok(turfService.getAllTurfs());
+    public ResponseEntity<List<TurfResponseDto>> all() {
+        return ResponseEntity.ok(turfService.getAllTurfs()); // CHANGE
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteTurf(@PathVariable Long id, @AuthenticationPrincipal Jwt principal ){
-        UserDto user = userClient.getUserByEmail(principal.getSubject());
-        Long userId = user.getId();
-        List<String> roles = principal.getClaim("roles");
-        turfService.deleteTurf(id, userId, roles);
-        return ResponseEntity.ok("Turf deleted successfully");
+    @Operation(
+            summary = "List my turfs (owner only)", // CHANGE: new API
+            description = "Returns all turfs owned by the authenticated user. Requires ROLE_OWNER."
+    )
+    @ApiResponse(responseCode = "200", description = "List of my turfs", content = @Content)
+    @GetMapping("/me")
+    public ResponseEntity<List<TurfResponseDto>> myTurfs(@AuthenticationPrincipal Jwt principal) { // CHANGE
+        String email = principal.getSubject();
+        return ResponseEntity.ok(turfService.getMyTurfs(email)); // CHANGE
     }
 }

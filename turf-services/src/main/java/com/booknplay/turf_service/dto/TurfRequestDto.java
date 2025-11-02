@@ -1,19 +1,35 @@
 package com.booknplay.turf_service.dto;
 
-import com.booknplay.turf_service.entity.SportType;
-import com.booknplay.turf_service.entity.TurfStatus;
 import lombok.Data;
 
 import java.time.LocalTime;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
+import java.util.List;
+
 @Data
-public class TurfRequestDto {
+public class TurfRequestDto { // CHANGE: adjusted to new model
+    @NotBlank(message = "name is required")
+    @Size(max = 255, message = "name must be at most 255 characters")
     private String name;
-    private String location;
-    private SportType sportType;
+
+    @Valid
+    @NotNull(message = "address is required")
+    private AddressDto address;
+
+    @Valid
+    @NotEmpty(message = "sportOptions is required and cannot be empty")
+    private List<TurfSportOptionDto> sportOptions;
+
+    @Positive(message = "pricePerHour must be positive")
+    @NotNull(message = "pricePerHour is required")
     private Double pricePerHour;
-    private Boolean isIndoor;
-    private TurfStatus status;
+
+    @NotNull(message = "availableFrom is required")
     private LocalTime availableFrom;
+
+    @NotNull(message = "availableTo is required")
     private LocalTime availableTo;
 }

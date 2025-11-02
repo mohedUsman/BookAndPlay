@@ -35,7 +35,9 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @Operation(summary = "Register a new user")
+    @Operation(summary = "Register a new user",
+            description = "User Registration through this api, If no role is provided default ROLE_USER it will take" +
+                    "Only user with TURF_OWNER can create the ROLE_ADMIN")
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody UserDto request) {
 
