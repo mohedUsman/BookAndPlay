@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,6 +34,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthService authService;
 
@@ -40,7 +43,7 @@ public class AuthController {
                     "Only user with TURF_OWNER can create the ROLE_ADMIN")
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody UserDto request) {
-
+        logger.info("Register API called with email: {}", request.getEmail());
         String result = authService.register(request);
         return ResponseEntity.ok(result);
     }
@@ -49,6 +52,8 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
         String token = authService.login(request);
+        logger.info("User registration successful for email: {}", request.getEmail());
+
         return ResponseEntity.ok(token);
     }
 }
