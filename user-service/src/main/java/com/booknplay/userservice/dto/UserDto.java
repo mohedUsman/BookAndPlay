@@ -23,7 +23,7 @@ public class UserDto {
     @Size(min = 6, max = 255, message = "Password must be between 6 and 255 characters")
     private String password;
 
-    @Size(max = 10, message = "Phone must be at most 10 digits")
+    @Size(max = 10, min =10, message = "Phone must be at most 10 digits")
     private String phone;
 
     private Set<@NotBlank(message = "Role must not be blank") String> roles;
