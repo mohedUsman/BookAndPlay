@@ -49,9 +49,7 @@ public class SlotServiceImpl implements SlotService {
         while (!cursor.plusMinutes(fixedDurationMinutes).isAfter(to)) {
             LocalTime next = cursor.plusMinutes(fixedDurationMinutes);
 
-            // Removed idempotent/uniqueness pre-check:
-            // Previously: check existing slot by (turfId, date, startTime, endTime) and skip if exists.
-            // Now: always create new rows for the window.
+
             toCreate.add(Slot.builder()
                     .turfId(slotDto.getTurfId())
                     .date(slotDto.getDate())

@@ -35,7 +35,7 @@ public class TurfController { // CHANGE: thin controller
     public ResponseEntity<TurfResponseDto> addTurf(@Valid @RequestBody TurfRequestDto dto,
                                                    @AuthenticationPrincipal Jwt principal) {
         String email = principal.getSubject();
-        return ResponseEntity.ok(turfService.addTurf(dto, email)); // CHANGE: delegate
+        return ResponseEntity.ok(turfService.addTurf(dto, email));
     }
 
     @Operation(
@@ -45,7 +45,7 @@ public class TurfController { // CHANGE: thin controller
     @ApiResponse(responseCode = "200", description = "Turf found", content = @Content(schema = @Schema(implementation = TurfResponseDto.class)))
     @GetMapping("/{id}")
     public ResponseEntity<TurfResponseDto> getTurf(@PathVariable Long id) {
-        return ResponseEntity.ok(turfService.getTurfById(id)); // CHANGE: delegate
+        return ResponseEntity.ok(turfService.getTurfById(id));
     }
 
     @Operation(
@@ -57,6 +57,7 @@ public class TurfController { // CHANGE: thin controller
     @PutMapping("/{turfId}")
     public ResponseEntity<TurfResponseDto> updateTurf(@PathVariable Long turfId,
                                                       @RequestBody TurfRequestDto dto,
+                                                      //extract the value of the HTTP header named X-Owner-Email from the incoming request
                                                       @RequestHeader("X-Owner-Email") String ownerEmail) {
         return ResponseEntity.ok(turfService.updateTurfById(turfId, dto, ownerEmail));
     }

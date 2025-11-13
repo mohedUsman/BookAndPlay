@@ -27,7 +27,7 @@ public class SlotController {
     @Operation(
             summary = "Create slots for a turf (owner)",
             description = "Generates 60-minute slots for the given turf and date based on the turf's availability window. "
-                    + "Enforces that the authenticated user is the owner of the turf. Idempotent per slot window.",
+                    + "Enforces that the authenticated user is the owner of the turf",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @PostMapping

@@ -58,11 +58,7 @@ public class PaymentServiceImpl implements PaymentService {
             throw new CustomException("Amount to pay must be greater than zero");
         }
 
-        // Owner Id resolution: we need owner id from booking/turf; absent here, we simulate by looking up user roles later
-        // Since BookingDto doesn't contain ownerId, we store payerUserId and later filter owner's payments by role rule.
-        // Alternatively, you can extend BookingDto to include turfOwnerId. For now, we require OWNER to view payments via turfOwnerId param.
-        // To keep owner visibility, we will store turfOwnerId as null and update model to require it passed via admin/owner endpoints.
-        // Better approach: extend Booking-Service to include ownerId in BookingDto. For now, simulate as same as payerUserId (not ideal).
+
         Long turfOwnerId = null; // placeholder, see controller-level owner listing requiring ownerId resolution
 
         Payment payment = Payment.builder()
