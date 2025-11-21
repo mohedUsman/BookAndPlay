@@ -1,51 +1,52 @@
-  server:
-    port: 8080
+server:
+  port: 8080
 
-  spring:
-    application:
-      name: API-GATEWAY
-    cloud:
-      gateway:
-        default-filters:
-          #  mark downstream calls as coming from gateway
-          - AddRequestHeader=X-Internal-Caller, gateway
-           # Optional hygiene: remove cookies
-          - RemoveRequestHeader=Cookie
-        routes:
-          - id: USER-SERVICE
-            uri: lb://USER-SERVICE
-            predicates:
-              - Path=/api/users/**
-          - id: TURF-SERVICE
-            uri: lb://TURF-SERVICE
-            predicates:
-              - Path=/api/turfs/**
-          - id: BOOKING-SERVICE
-            uri: lb://BOOKING-SERVICE
-            predicates:
-              - Path=/api/bookings/**
-          - id: PAYMENT-SERVICE
-            uri: lb://PAYMENT-SERVICE
-            predicates:
-              - Path=/api/payments/**
+spring:
+  application:
+    name: API-GATEWAY
+  cloud:
+    gateway:
+      default-filters:
+        # Mark downstream calls as coming from the gateway
+        - AddRequestHeader=X-Internal-Caller, gateway
+        # Optional hygiene: remove cookies
+        - RemoveRequestHeader=Cookie
+      routes:
+        - id: USER-SERVICE
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/users/**
+        - id: TURF-SERVICE
+          uri: lb://TURF-SERVICE
+          predicates:
+            - Path=/api/turfs/**
+        - id: BOOKING-SERVICE
+          uri: lb://BOOKING-SERVICE
+          predicates:
+            - Path=/api/bookings/**
+        - id: PAYMENT-SERVICE
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/payments/**
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Use the same HS256 secret that the User Service uses to issue tokens
+          secret: ${JWT_SECRET:booknplay_very_strong_jwt_key_123456!}
+          # Explicitly set MAC algorithm to avoid auto-detection issues
+          mac-algorithm: HS256
 
-    security:
-      oauth2:
-        resourceserver:
-          jwt:
-            # ADD: Use the same HS256 secret as User Service
-            secret: ${JWT_SECRET:booknplay_very_strong_jwt_key_123456!}
+# Secret used to sign internal headers (distinct from JWT secret)
+gateway:
+  internal:
+    secret: ${GATEWAY_INTERNAL_SECRET:booknplay_asdfghjkl1234wersdf!}
 
-  # CHANGE: Secret used to sign internal headers (distinct from JWT secret)
-  gateway:
-    internal:
-      secret: ${GATEWAY_INTERNAL_SECRET:booknplay_asdfghjkl1234wersdf!}
-
-  eureka:
-    instance:
-      prefer-ip-address: true
-    client:
-      fetch-registry: true
-      register-with-eureka: true
-      service-url:
-        defaultZone: http://localhost:8761/eureka
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka}
