@@ -11,8 +11,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid; // CHANGE: validation on inputs
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,10 +31,10 @@ public class TurfController { // CHANGE: thin controller
     @ApiResponse(responseCode = "200", description = "Turf created", content = @Content(schema = @Schema(implementation = TurfResponseDto.class)))
     @PostMapping
     public ResponseEntity<TurfResponseDto> addTurf(@Valid @RequestBody TurfRequestDto dto,
-                                                   @AuthenticationPrincipal Jwt principal) {
-        String email = principal.getSubject();
-        return ResponseEntity.ok(turfService.addTurf(dto, email));
+                                                   @RequestHeader("X-User-Email") String ownerEmail) { // CHANGE
+        return ResponseEntity.ok(turfService.addTurf(dto, ownerEmail));
     }
+
 
     @Operation(
             summary = "Get turf by ID",
@@ -48,6 +46,7 @@ public class TurfController { // CHANGE: thin controller
         return ResponseEntity.ok(turfService.getTurfById(id));
     }
 
+
     @Operation(
             summary = "Update my turf (owner only)", // CHANGE
             description = "Updates the authenticated owner's turf without requiring a path ID. " +
@@ -57,10 +56,10 @@ public class TurfController { // CHANGE: thin controller
     @PutMapping("/{turfId}")
     public ResponseEntity<TurfResponseDto> updateTurf(@PathVariable Long turfId,
                                                       @RequestBody TurfRequestDto dto,
-                                                      //extract the value of the HTTP header named X-Owner-Email from the incoming request
-                                                      @RequestHeader("X-Owner-Email") String ownerEmail) {
+                                                      @RequestHeader("X-User-Email") String ownerEmail) { // CHANGE
         return ResponseEntity.ok(turfService.updateTurfById(turfId, dto, ownerEmail));
     }
+
 
     @Operation(
             summary = "Delete my turf (owner only)", // CHANGE
@@ -69,10 +68,11 @@ public class TurfController { // CHANGE: thin controller
     @ApiResponse(responseCode = "200", description = "Turf deleted")
     @DeleteMapping("/{turfId}")
     public ResponseEntity<Void> deleteTurf(@PathVariable Long turfId,
-                                           @RequestHeader("X-Owner-Email") String ownerEmail) {
+                                           @RequestHeader("X-User-Email") String ownerEmail) { // CHANGE
         turfService.deleteTurfById(turfId, ownerEmail);
         return ResponseEntity.ok().build();
     }
+
 
     @Operation(
             summary = "List all turfs (any authenticated user)",
@@ -81,7 +81,7 @@ public class TurfController { // CHANGE: thin controller
     @ApiResponse(responseCode = "200", description = "List of turfs", content = @Content)
     @GetMapping
     public ResponseEntity<List<TurfResponseDto>> all() {
-        return ResponseEntity.ok(turfService.getAllTurfs()); // CHANGE
+        return ResponseEntity.ok(turfService.getAllTurfs());
     }
 
     @Operation(
@@ -90,8 +90,7 @@ public class TurfController { // CHANGE: thin controller
     )
     @ApiResponse(responseCode = "200", description = "List of my turfs", content = @Content)
     @GetMapping("/me")
-    public ResponseEntity<List<TurfResponseDto>> myTurfs(@AuthenticationPrincipal Jwt principal) { // CHANGE
-        String email = principal.getSubject();
-        return ResponseEntity.ok(turfService.getMyTurfs(email)); // CHANGE
+    public ResponseEntity<List<TurfResponseDto>> myTurfs(@RequestHeader("X-User-Email") String ownerEmail) { // CHANGE
+        return ResponseEntity.ok(turfService.getMyTurfs(ownerEmail));
     }
 }
