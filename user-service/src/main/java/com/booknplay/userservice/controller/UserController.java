@@ -41,20 +41,18 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/me")
-    public ResponseEntity<User> getCurrentUser(Principal principal) {
-        User user = userService.getCurrentUser(principal);
+    public ResponseEntity<User> getCurrentUser(@RequestHeader("X-User-Email") String email) { // CHANGE
+        User user = userService.getUserByEmail(email);
         return ResponseEntity.ok(user);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id);
         return ResponseEntity.ok(user);
     }
 
     @GetMapping("/email/{email}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
         User user = userService.getUserByEmail(email);
         return ResponseEntity.ok(user);
@@ -63,27 +61,24 @@ public class UserController {
     @PutMapping("/me")
     @Transactional
     public ResponseEntity<String> updateCurrentUser(@Valid @RequestBody UserDto request,
-                                                    Principal principal) {
-        String result = userService.updateCurrentUser(request, principal);
+                                                    @RequestHeader("X-User-Email") String email) { // CHANGE
+        String result = userService.updateCurrentUser(request, () -> email);
         return ResponseEntity.ok(result);
     }
 
     @PutMapping("/me/password")
     @Transactional
     public ResponseEntity<String> changePassword(@Valid @RequestBody PasswordChangeDto dto,
-                                                 Principal principal) {
-        String result = userService.changePassword(dto, principal);
+                                                 @RequestHeader("X-User-Email") String email) { // CHANGE
+        String result = userService.changePassword(dto, () -> email);
         return ResponseEntity.ok(result);
     }
 
     @DeleteMapping("/me")
     @Transactional
-    public ResponseEntity<String> deleteCurrentUser(Principal principal) {
-        String result = userService.deleteCurrentUser(principal);
-
-        // Clear any session/security context after successful deletion
+    public ResponseEntity<String> deleteCurrentUser(@RequestHeader("X-User-Email") String email) { // CHANGE
+        String result = userService.deleteCurrentUser(() -> email);
         SecurityContextHolder.clearContext();
-
         return ResponseEntity.ok(result);
     }
 }
