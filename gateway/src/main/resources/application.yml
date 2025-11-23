@@ -4,29 +4,45 @@ server:
 spring:
   application:
     name: API-GATEWAY
-
   cloud:
     gateway:
+      default-filters:
+        - RemoveRequestHeader=Cookie
+        # Forward Authorization header so downstream services see the token
+        - AddRequestHeader=Forwarded-Auth, true
       routes:
         - id: USER-SERVICE
           uri: lb://USER-SERVICE
           predicates:
             - Path=/api/users/**
-
         - id: TURF-SERVICE
           uri: lb://TURF-SERVICE
           predicates:
             - Path=/api/turfs/**
-
-        - id: BOOKING-SERVICE
-          uri: lb://BOOKING-SERVICE
+        # User Service Swagger
+        - id: USER-SERVICE-SWAGGER
+          uri: lb://USER-SERVICE
           predicates:
-            - Path=/api/bookings/**
+            - Path=/user/swagger-ui/**,/user/v3/api-docs/**
+          filters:
+            - StripPrefix=1
 
-        - id: PAYMENT-SERVICE
-          uri: lb://PAYMENT-SERVICE
+        # Turf Service Swagger
+        - id: TURF-SERVICE-SWAGGER
+          uri: lb://TURF-SERVICE
           predicates:
-            - Path=/api/payments/**
+            - Path=/turf/swagger-ui/**,/turf/v3/api-docs/**
+          filters:
+            - StripPrefix=1
+#        - id: BOOKING-SERVICE
+#          uri: lb://BOOKING-SERVICE
+#          predicates:
+#            - Path=/api/bookings/**
+#        - id: PAYMENT-SERVICE
+#          uri: lb://PAYMENT-SERVICE
+#          predicates:
+#            - Path=/api/payments/**
+
 
 eureka:
   instance:
@@ -36,3 +52,20 @@ eureka:
     register-with-eureka: true
     service-url:
       defaultZone: http://localhost:8761/eureka
+
+# CHANGES: Security properties for Gateway
+security:
+  jwt:
+    #  Keep this in sync with USER-SERVICE jwt.secret
+    secret: booknplay_very_strong_jwt_key_123456!
+
+
+# Public endpoints that bypass auth checks at gateway
+booknplay:
+  gateway:
+    public-paths:
+      - /api/users/login
+      - /api/users/register
+      - /swagger-ui/**
+      - /v3/api-docs/**
+      - /swagger-ui.html
