@@ -4,22 +4,44 @@ server:
 spring:
   application:
     name: API-GATEWAY
+  main:
+    web-application-type: reactive
   cloud:
     gateway:
       default-filters:
-        - RemoveRequestHeader=Cookie
-        # Forward Authorization header so downstream services see the token
-        - AddRequestHeader=Forwarded-Auth, true
+        - AddRequestHeader=Forwarded-By, API-GATEWAY
       routes:
+        # User Service APIs
         - id: USER-SERVICE
           uri: lb://USER-SERVICE
           predicates:
             - Path=/api/users/**
+
+        # Turf Service APIs
         - id: TURF-SERVICE
           uri: lb://TURF-SERVICE
           predicates:
             - Path=/api/turfs/**
-        # User Service Swagger
+
+        # Booking Service APIs
+        - id: BOOKING-SERVICE
+          uri: lb://BOOKING-SERVICE
+          predicates:
+            - Path=/api/bookings/**
+
+        # Payment Service APIs
+        - id: PAYMENT-SERVICE
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/payments/**
+
+        # Notification Service APIs
+        - id: NOTIFICATION-SERVICE
+          uri: lb://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/api/notifications/**
+
+        # Swagger routes per service (clear scoping)
         - id: USER-SERVICE-SWAGGER
           uri: lb://USER-SERVICE
           predicates:
@@ -27,23 +49,35 @@ spring:
           filters:
             - StripPrefix=1
 
-        # Turf Service Swagger
         - id: TURF-SERVICE-SWAGGER
           uri: lb://TURF-SERVICE
           predicates:
             - Path=/turf/swagger-ui/**,/turf/v3/api-docs/**
           filters:
             - StripPrefix=1
-#        - id: BOOKING-SERVICE
-#          uri: lb://BOOKING-SERVICE
-#          predicates:
-#            - Path=/api/bookings/**
-#        - id: PAYMENT-SERVICE
-#          uri: lb://PAYMENT-SERVICE
-#          predicates:
-#            - Path=/api/payments/**
 
+        - id: BOOKING-SERVICE-SWAGGER
+          uri: lb://BOOKING-SERVICE
+          predicates:
+            - Path=/booking/swagger-ui/**,/booking/v3/api-docs/**
+          filters:
+            - StripPrefix=1
 
+        # Payment Swagger (accessible without JWT)
+        - id: PAYMENT-SERVICE-SWAGGER
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/payment/swagger-ui/**,/payment/v3/api-docs/**
+          filters:
+            - StripPrefix=1
+
+        # Notification Swagger (accessible without JWT)
+        - id: NOTIFICATION-SERVICE-SWAGGER
+          uri: lb://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/notification/swagger-ui/**,/notification/v3/api-docs/**
+          filters:
+            - StripPrefix=1
 eureka:
   instance:
     prefer-ip-address: true
@@ -53,19 +87,11 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka
 
-# CHANGES: Security properties for Gateway
 security:
   jwt:
-    #  Keep this in sync with USER-SERVICE jwt.secret
     secret: booknplay_very_strong_jwt_key_123456!
 
-
-# Public endpoints that bypass auth checks at gateway
-booknplay:
-  gateway:
-    public-paths:
-      - /api/users/login
-      - /api/users/register
-      - /swagger-ui/**
-      - /v3/api-docs/**
-      - /swagger-ui.html
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: INFO

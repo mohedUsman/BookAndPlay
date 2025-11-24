@@ -8,11 +8,10 @@ import org.springframework.context.annotation.Configuration;
 
 @OpenAPIDefinition(info = @Info(title = "Booking Service API", version = "1.0"))
 @SecurityScheme(
-        name="BearerAuth",
-        type= SecuritySchemeType.HTTP,
+        name = "bearerAuth",
+        type = SecuritySchemeType.HTTP,
         scheme = "bearer",
         bearerFormat = "JWT"
 )
 @Configuration
-public class SwaggerConfig {
-}
+public class SwaggerConfig {}

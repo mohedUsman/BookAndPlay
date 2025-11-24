@@ -19,6 +19,7 @@ public class SecurityConfig {
     private String secret;
 
     //Reactive decoder bean required for WebFlux-based Gateway
+    //Takes your secret key and creates a "token decoder"
     @Bean
     public ReactiveJwtDecoder reactiveJwtDecoder() {
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
@@ -33,7 +34,10 @@ public class SecurityConfig {
                         .pathMatchers("/api/users/login", "/api/users/register",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
                                 "/user/swagger-ui/**", "/user/v3/api-docs/**",
-                                "/turf/swagger-ui/**", "/turf/v3/api-docs/**")
+                                "/turf/swagger-ui/**", "/turf/v3/api-docs/**",
+                                "/booking/swagger-ui/**", "/booking/v3/api-docs/**",
+                                "/payment/swagger-ui/**", "/payment/v3/api-docs/**",
+                                "/notification/swagger-ui/**", "/notification/v3/api-docs/**")
                         .permitAll()
                         .anyExchange().authenticated()
                 )

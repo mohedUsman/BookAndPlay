@@ -4,14 +4,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
@@ -21,7 +18,6 @@ import java.util.List;
 @Configuration
 public class OwnerRoleGuardFilter {
 
-    // Use same HS256 secret as User Service
     @Value("${security.jwt.secret}")
     private String secret;
 
@@ -30,6 +26,7 @@ public class OwnerRoleGuardFilter {
         return roles.stream().anyMatch(r -> "ROLE_OWNER".equalsIgnoreCase(r));
     }
 
+    @SuppressWarnings("unchecked")
     private List<String> extractRoles(Claims claims) {
         Object roles = claims.get("roles");
         if (roles instanceof List<?> list) {
@@ -41,15 +38,20 @@ public class OwnerRoleGuardFilter {
     @Bean
     public GlobalFilter ownerWriteGuard() {
         return (exchange, chain) -> {
-            String path = exchange.getRequest().getURI().getPath();
-            HttpMethod method = exchange.getRequest().getMethod();
+            var request = exchange.getRequest();
+            String path = request.getURI().getPath();
+            HttpMethod method = request.getMethod();
 
-            // Apply guard only for write ops to /api/turfs/**
-            boolean writeOp = method == HttpMethod.POST || method == HttpMethod.PUT || method == HttpMethod.DELETE;
-            boolean isTurfApi = path.startsWith("/api/turfs/") || "/api/turfs".equals(path);
+            boolean isWriteOp = method == HttpMethod.POST || method == HttpMethod.PUT || method == HttpMethod.DELETE;
 
-            if (isTurfApi && writeOp) {
-                String auth = exchange.getRequest().getHeaders().getFirst("Authorization");
+            // Rule 1: Turf write operations require ROLE_OWNER
+            boolean isTurfWrite = isWriteOp && (path.startsWith("/api/turfs/") || "/api/turfs".equals(path));
+
+            // Rule 2: Booking slot creation requires ROLE_OWNER (but regular booking creation DOES NOT)
+            boolean isSlotCreation = method == HttpMethod.POST && path.equals("/api/bookings/slots");
+
+            if (isTurfWrite || isSlotCreation) {
+                String auth = request.getHeaders().getFirst("Authorization");
                 if (auth == null || !auth.startsWith("Bearer ")) {
                     exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                     return exchange.getResponse().setComplete();
@@ -64,13 +66,14 @@ public class OwnerRoleGuardFilter {
                         exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
                         return exchange.getResponse().setComplete();
                     }
-                    // CHANGES: Allow request to proceed if owner
                     return chain.filter(exchange);
                 } catch (Exception e) {
                     exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                     return exchange.getResponse().setComplete();
                 }
             }
+
+            // For other booking endpoints (e.g., POST /api/bookings), only authentication is required (handled by Gateway SecurityConfig).
             return chain.filter(exchange);
         };
     }

@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 
 @OpenAPIDefinition(info = @Info(title = "Notification Service API", version = "1.0"))
 @SecurityScheme(
-        name="BearerAuth",
-        type= SecuritySchemeType.HTTP,
+        name = "bearerAuth",
+        type = SecuritySchemeType.HTTP,
         scheme = "bearer",
         bearerFormat = "JWT"
 )

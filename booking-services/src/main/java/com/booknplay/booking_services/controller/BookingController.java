@@ -10,9 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +24,7 @@ import java.util.List;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final UserClient userClient;
 
     @Operation(
             summary = "Create a booking",
@@ -34,8 +33,10 @@ public class BookingController {
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @PostMapping
-    public ResponseEntity<BookingResponseDto> createBooking(@Valid @RequestBody BookingRequestDto dto) {
-        BookingResponseDto response = bookingService.createBooking(dto, dto.getUserId());
+    public ResponseEntity<BookingResponseDto> createBooking(@Valid @RequestBody BookingRequestDto dto,
+                                                            @AuthenticationPrincipal Jwt principal) {
+        UserDto user = userClient.getUserByEmail(principal.getSubject());
+        BookingResponseDto response = bookingService.createBooking(dto, user.getId());
         return ResponseEntity.status(201).body(response);
     }
 

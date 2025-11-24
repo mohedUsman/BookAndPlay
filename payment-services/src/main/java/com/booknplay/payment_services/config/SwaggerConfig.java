@@ -6,13 +6,13 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 
+
 @OpenAPIDefinition(info = @Info(title = "Payment Service API", version = "1.0"))
 @SecurityScheme(
-        name = "BearerAuth",
+        name = "bearerAuth",
         type = SecuritySchemeType.HTTP,
         scheme = "bearer",
         bearerFormat = "JWT"
 )
 @Configuration
-public class SwaggerConfig {
-}
+public class SwaggerConfig {}
