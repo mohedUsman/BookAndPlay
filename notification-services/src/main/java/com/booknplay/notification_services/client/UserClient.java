@@ -10,12 +10,4 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface UserClient {
     @GetMapping("/email/{email}")
     UserDto getUserByEmail(@PathVariable String email);
-
-    @GetMapping("/{id}")
-    UserDto getUserById(@PathVariable Long id);
-
-    // Convenience wrapper for enrichment; implement as default method
-    default UserDto getUserByIdSafe(Long id) {
-        try { return getUserById(id); } catch (Exception e) { return null; }
-    }
 }

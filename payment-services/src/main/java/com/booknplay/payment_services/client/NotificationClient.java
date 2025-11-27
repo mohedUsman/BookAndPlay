@@ -1,14 +1,13 @@
 package com.booknplay.payment_services.client;
 
-import com.booknplay.payment_services.config.FeignClientConfig;
-import com.booknplay.payment_services.dto.NotificationResponse;
 import com.booknplay.payment_services.dto.PaymentSuccessNotificationRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "NOTIFICATION-SERVICE", configuration = FeignClientConfig.class, path = "/api/notifications")
+@FeignClient(name = "NOTIFICATION-SERVICE") // NEW: Uses Eureka service name
 public interface NotificationClient {
 
-    @PostMapping("/payment-success")
-    NotificationResponse paymentSuccess(PaymentSuccessNotificationRequest request);
+    @PostMapping("/api/notifications/payment-success") // NEW: Endpoint in Notification Service
+    void sendPaymentSuccess(@RequestBody PaymentSuccessNotificationRequest request);
 }

@@ -6,6 +6,7 @@ import com.booknplay.booking_services.dto.BookingResponseDto;
 import com.booknplay.booking_services.dto.TurfDto;
 import com.booknplay.booking_services.entity.Booking;
 import com.booknplay.booking_services.entity.Slot;
+import com.booknplay.booking_services.event.BookingCreatedEvent;
 import com.booknplay.booking_services.exception.CustomException;
 import com.booknplay.booking_services.repository.BookingRepository;
 import com.booknplay.booking_services.repository.SlotRepository;
@@ -15,11 +16,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-
+// NEW: Publisher to emit events post-commit
+import org.springframework.context.ApplicationEventPublisher;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final SlotRepository slotRepository;
     private final TurfClient turfClient;
+    private final ApplicationEventPublisher eventPublisher; // NEW: Injected publisher
 
     @Override
     @Transactional
@@ -57,9 +59,15 @@ public class BookingServiceImpl implements BookingService {
 
         // Price computation
         TurfDto turf = turfClient.getTurfById(turfId);
-        double totalHours = slots.stream()
+
+        // CHANGED: Parallelize duration/amount computation when slot list is large
+        // NEW: Threshold guard to avoid overhead for small lists
+        boolean parallelize = slots.size() >= 50; // NEW
+        double totalHours = (parallelize
+                ? slots.parallelStream()
+                : slots.stream())
                 .mapToDouble(s -> Duration.between(s.getStartTime(), s.getEndTime()).toMinutes() / 60.0)
-                .sum();
+                .sum(); // CHANGED
         double totalAmount = totalHours * turf.getPricePerHour();
 
         // Book the slots
@@ -80,6 +88,10 @@ public class BookingServiceImpl implements BookingService {
                 .build();
 
         Booking saved = bookingRepository.save(booking);
+
+        // NEW: Publish event AFTER COMMIT handled by async listener
+        eventPublisher.publishEvent(new BookingCreatedEvent(saved.getId(), saved.getUserId(), saved.getTurfId(), saved.getAmount()));
+
         return toDto(saved);
     }
 
@@ -92,6 +104,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingResponseDto> getBookingsByUserId(Long userId) {
+        // Optional: could parallelize mapping for large lists; keeping unchanged for simplicity
         return bookingRepository.findByUserId(userId).stream()
                 .map(this::toDto)
                 .toList();
@@ -99,6 +112,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingResponseDto> getAllBookings() {
+        // Optional: could parallelize mapping for large lists; keeping unchanged for simplicity
         return bookingRepository.findAll().stream()
                 .map(this::toDto)
                 .toList();

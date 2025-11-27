@@ -12,14 +12,16 @@ public class FeignClientConfig implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate requestTemplate) {
-        // If Authorization is already set explicitly, do not override.
-        if (requestTemplate.headers().containsKey("Authorization")) {
-            return;
-        }
+        System.out.println("ehldmdd-----------------------j");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof JwtAuthenticationToken jwtAuth) {
+        if (authentication instanceof JwtAuthenticationToken jwtAuth){
             String token = jwtAuth.getToken().getTokenValue();
-            requestTemplate.header("Authorization", "Bearer " + token);
+            System.out.println("token=============="+ token);
+            requestTemplate.header("Authorization", "Bearer "+token);
         }
+        else {
+            System.out.println("No authentication or token found");
+        }
+
     }
 }
