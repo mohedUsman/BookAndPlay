@@ -18,8 +18,8 @@ public class BookingServicesApplication {
 	}
 
 
-    @Bean // CHANGED: Inject NotificationClient into listener
-    public BookingEventListener bookingEventListener(NotificationClient notificationClient) { // NEW
-        return new BookingEventListener(notificationClient); // NEW
+    @Bean // NEW: Register async listener
+    public BookingEventListener bookingEventListener() {
+        return new BookingEventListener();
     }
 }

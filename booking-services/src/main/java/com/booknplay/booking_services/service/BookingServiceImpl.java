@@ -14,13 +14,14 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.dao. OptimisticLockingFailureException;
+// NEW: Publisher to emit events post-commit
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-// NEW: Publisher to emit events post-commit
-import org.springframework.context.ApplicationEventPublisher;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +43,6 @@ public class BookingServiceImpl implements BookingService {
             throw new CustomException("turfId and slotIds are required");
         }
 
-        // Load slots and validate
         List<Slot> slots = slotRepository.findAllById(dto.getSlotIds());
         if (slots.size() != dto.getSlotIds().size()) {
             throw new CustomException("Some slot IDs are invalid");
@@ -89,7 +89,6 @@ public class BookingServiceImpl implements BookingService {
 
         Booking saved = bookingRepository.save(booking);
 
-        // NEW: Publish event AFTER COMMIT handled by async listener
         eventPublisher.publishEvent(new BookingCreatedEvent(saved.getId(), saved.getUserId(), saved.getTurfId(), saved.getAmount()));
 
         return toDto(saved);

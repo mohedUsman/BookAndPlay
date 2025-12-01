@@ -10,26 +10,15 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
-@RequiredArgsConstructor // NEW: constructor injection
 public class PaymentEventListener {
 
-    private final NotificationClient notificationClient; // NEW: Feign client
-
-    @Async("paymentAsyncExecutor")
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async("paymentAsyncExecutor") // NEW: Run asynchronously
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT) // NEW: post-commit
     @EventListener
     public void onPaymentCreated(PaymentCreatedEvent event) {
-        // CHANGED: Send async notification via Notification Service
-        try {
-            var request = new PaymentSuccessNotificationRequest(
-                    event.paymentId(), event.bookingId(), event.payerUserId(), event.amount()
-            ); // NEW
-            notificationClient.sendPaymentSuccess(request); // NEW
-            log.info("[ASYNC] Payment notification sent: paymentId={}", event.paymentId()); // NEW
-        } catch (Exception ex) {
-            // NEW: Do not rethrow; log and continue to avoid impacting main flow
-            log.error("[ASYNC] Failed to send payment notification: paymentId={}, error={}",
-                    event.paymentId(), ex.getMessage(), ex);
-        }
+        // NEW: Simple audit log stub; replace with Notification Service call if desired
+        log.info("[ASYNC] Payment created: id={}, bookingId={}, payerUserId={}, amount={}",
+                event.paymentId(), event.bookingId(), event.payerUserId(), event.amount());
+        // NEW: Here you can call Notification Service via Feign (optional), wrapped in try/catch
     }
 }

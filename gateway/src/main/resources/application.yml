@@ -95,3 +95,13 @@ logging:
   level:
     org.springframework.cloud.gateway: INFO
     org.springframework.security: INFO
+
+# Public endpoints that bypass auth checks at gateway
+booknplay:
+  gateway:
+    public-paths:
+      - /api/users/login
+      - /api/users/register
+      - /swagger-ui/**
+      - /v3/api-docs/**
+      - /swagger-ui.html

@@ -10,16 +10,16 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.concurrent.Executor;
 
 @Configuration
-@EnableAsync // NEW: Enables @Async methods in this service
+@EnableAsync
 public class AsyncConfig {
 
-    @Bean(name = "bookingAsyncExecutor") // NEW: Named executor for booking-related async tasks
+    @Bean(name = "bookingAsyncExecutor")
     public Executor bookingAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(4); // NEW: small, bounded pool
-        executor.setMaxPoolSize(8);  // NEW
-        executor.setQueueCapacity(100); // NEW
-        executor.setThreadNamePrefix("booking-async-"); // NEW
+        executor.setCorePoolSize(4);
+        executor.setMaxPoolSize(8);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("booking-async-");
         executor.initialize();
         return executor;
     }

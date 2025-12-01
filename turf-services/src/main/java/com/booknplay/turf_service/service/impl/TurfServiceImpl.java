@@ -14,9 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -86,7 +84,6 @@ public class TurfServiceImpl implements TurfService {
                 .collect(Collectors.toList());
     }
 
-    // Helpers
     private void validateOwnerRole(UserDto owner, String ownerEmail) {
         if (owner == null || owner.getRoles() == null ||
                 owner.getRoles().stream().noneMatch(role -> "ROLE_OWNER".equalsIgnoreCase(role.getName()))) {
@@ -128,15 +125,10 @@ public class TurfServiceImpl implements TurfService {
         if (turf.getAddress() == null) {
             turf.setAddress(new Address());
         }
-       // turf.getAddress().setLine1(dto.getAddress().getLine1());
-       // turf.getAddress().setLine2(dto.getAddress().getLine2());
+
         turf.getAddress().setStreet(dto.getAddress().getStreet());
         turf.getAddress().setCity(dto.getAddress().getCity());
-       // turf.getAddress().setState(dto.getAddress().getState());
-       // turf.getAddress().setCountry(dto.getAddress().getCountry());
-       // turf.getAddress().setPostalCode(dto.getAddress().getPostalCode());
 
-        // Replace sport options
         List<TurfSportOption> newOptions = dto.getSportOptions().stream()
                 .map(opt -> TurfSportOption.builder()
                         .sportType(opt.getSportType())
@@ -147,13 +139,14 @@ public class TurfServiceImpl implements TurfService {
         turf.setSportOptions(newOptions);
     }
 
-    private TurfResponseDto toResponse(Turf turf) {
+    private TurfResponseDto
+    toResponse(Turf turf) {
         AddressDto addr = AddressDto.builder()
                 .street(turf.getAddress() != null ? turf.getAddress().getStreet() : "")
                 .city(turf.getAddress() != null ? turf.getAddress().getCity() : "")
                 .build();
 
-        java.util.List<TurfSportOptionDto> optionDtos = turf.getSportOptions() != null
+        List<TurfSportOptionDto> optionDtos = turf.getSportOptions() != null
                 ? turf.getSportOptions().stream()
                 .map(opt -> TurfSportOptionDto.builder()
                         .sportType(opt.getSportType())

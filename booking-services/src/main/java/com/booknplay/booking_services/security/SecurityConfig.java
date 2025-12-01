@@ -38,8 +38,6 @@ public class SecurityConfig {
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
 
-        // Optional: If you later want to use roles via @PreAuthorize, you may wire a JwtAuthenticationConverter here
-        // that maps "roles" or "realm_access.roles" to authorities. For now, omitted to match your simplified approach.
         return http.build();
     }
 }

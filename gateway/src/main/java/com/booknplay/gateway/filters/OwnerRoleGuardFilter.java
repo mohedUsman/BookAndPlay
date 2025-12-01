@@ -44,10 +44,10 @@ public class OwnerRoleGuardFilter {
 
             boolean isWriteOp = method == HttpMethod.POST || method == HttpMethod.PUT || method == HttpMethod.DELETE;
 
-            // Rule 1: Turf write operations require ROLE_OWNER
+            // Turf write operations require ROLE_OWNER
             boolean isTurfWrite = isWriteOp && (path.startsWith("/api/turfs/") || "/api/turfs".equals(path));
 
-            // Rule 2: Booking slot creation requires ROLE_OWNER (but regular booking creation DOES NOT)
+            //Booking slot creation requires ROLE_OWNER (but regular booking creation DOES NOT)
             boolean isSlotCreation = method == HttpMethod.POST && path.equals("/api/bookings/slots");
 
             if (isTurfWrite || isSlotCreation) {

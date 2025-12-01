@@ -3,35 +3,16 @@ package com.booknplay.userservice.controller;
 import com.booknplay.userservice.dto.PasswordChangeDto;
 import com.booknplay.userservice.dto.UserDto;
 import com.booknplay.userservice.entity.User;
-import com.booknplay.userservice.exception.ResourceNotFoundException;
-import com.booknplay.userservice.repository.UserRepository;
-import com.booknplay.userservice.service.JwtService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 import java.security.Principal;
-
-import com.booknplay.userservice.dto.PasswordChangeDto;
-import com.booknplay.userservice.dto.UserDto;
-import com.booknplay.userservice.entity.User;
 import com.booknplay.userservice.service.UserService;
-import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/users")
@@ -81,7 +62,6 @@ public class UserController {
     public ResponseEntity<String> deleteCurrentUser(Principal principal) {
         String result = userService.deleteCurrentUser(principal);
 
-        // Clear any session/security context after successful deletion
         SecurityContextHolder.clearContext();
 
         return ResponseEntity.ok(result);

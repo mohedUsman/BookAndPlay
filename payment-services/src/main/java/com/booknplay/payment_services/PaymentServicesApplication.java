@@ -17,8 +17,8 @@ public class PaymentServicesApplication {
 		SpringApplication.run(PaymentServicesApplication.class, args);
 	}
 
-    @Bean // CHANGED: Inject NotificationClient into listener
-    public PaymentEventListener paymentEventListener(NotificationClient notificationClient) { // NEW
-        return new PaymentEventListener(notificationClient); // NEW
+    @Bean // NEW: Register async listener
+    public PaymentEventListener paymentEventListener() {
+        return new PaymentEventListener();
     }
 }

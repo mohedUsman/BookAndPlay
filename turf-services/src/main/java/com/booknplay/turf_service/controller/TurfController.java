@@ -49,7 +49,7 @@ public class TurfController { // CHANGE: thin controller
     }
 
     @Operation(
-            summary = "Update my turf (owner only)", // CHANGE
+            summary = "Update my turf (owner only)",
             description = "Updates the authenticated owner's turf without requiring a path ID. " +
                     "Requires ROLE_OWNER. If multiple turfs exist per owner, clarify selection strategy."
     )
@@ -57,13 +57,12 @@ public class TurfController { // CHANGE: thin controller
     @PutMapping("/{turfId}")
     public ResponseEntity<TurfResponseDto> updateTurf(@PathVariable Long turfId,
                                                       @RequestBody TurfRequestDto dto,
-                                                      //extract the value of the HTTP header named X-Owner-Email from the incoming request
                                                       @RequestHeader("X-Owner-Email") String ownerEmail) {
         return ResponseEntity.ok(turfService.updateTurfById(turfId, dto, ownerEmail));
     }
 
     @Operation(
-            summary = "Delete my turf (owner only)", // CHANGE
+            summary = "Delete my turf (owner only)",
             description = "Deletes the authenticated owner's turf without requiring a path ID. Requires ROLE_OWNER."
     )
     @ApiResponse(responseCode = "200", description = "Turf deleted")
